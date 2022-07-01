@@ -1,0 +1,92 @@
+\documentclass[handout]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{verbatim}
+
+\usetheme{metropolis}
+\title{Algorithmique Avancée}
+\subtitle{C++ : Concepts Avancés}
+\author{Julien Roland}
+
+\let\emph\relax % there's no \RedeclareTextFontCommand
+\DeclareTextFontCommand{\emph}{\bfseries\em}
+
+\newcommand{\Op}[2]{\texttt{\underline{#1}#2}}
+\usepackage{listingsutf8}
+
+\begin{document}
+\lstset{language=c++, basicstyle=\small, columns=fullflexible, inputencoding=utf8/latin1}
+    
+\setbeamercovered{dynamic}
+    
+\maketitle
+
+\begin{frame}[t]{Références}
+    \begin{itemize}
+        \item \href{http://www.informit.com/store/tour-of-c-plus-plus-9780133549010}{A Tour of C++, Bjarne Stroustrup, C++ In Depth, Addison-Wesley, 2013.}
+        \item \href{http://www.stroustrup.com/Programming/}{Programming : Principles and Practice Using C++, Bjarne Stroustrup, Addison-Wesley, 2014.}
+        \item \href{http://www.stroustrup.com/Programming/lecture-slides.html}{Programming - Lecture slides, Bjarne Stroustrup, 2015.}
+        \item Professional C++, Marc Gregoire, Wrox, 3e édition, 2014.
+        \item \href{http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines}{C++ Core Guidelines}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Gestion des ressources}
+\begin{lstlisting}
+struct Person { std::string first_name, last_name; };
+
+Person* create_person(std::string first_name, std::string last_name) {
+    return new Person { first_name, last_name };
+}
+
+int main () {
+    Person* p1 = create_person("Alan", "Turin");
+    Person* p2 = create_person("Ada", "Lovelace");
+
+    // ...
+
+    delete p1;
+    delete p2;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Pointeurs intelligent}
+\begin{lstlisting}
+#include <memory>
+
+struct Person { std::string first_name, last_name; };
+
+Person* create_person(std::string first_name, std::string last_name) {
+    return new Person { first_name, last_name };
+}
+
+int main () {
+    auto p1 = std::unique_ptr<Person>{create_person("Alan", "Turin")};
+    auto p2 = std::unique_ptr<Person>{create_person("Ada", "Lovelace")};
+
+    std::cout << p1->first_name << ", " << p1->last_name << std::endl;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Pointeurs intelligent}
+\begin{lstlisting}
+struct Person {
+    std::string first_name, last_name;
+    Person(std::string first, std::string last): first_name(first), last_name(last) {}
+};
+
+std::unique_ptr<Person> create_person(std::string first_name, std::string last_name) {
+    auto p = std::make_unique<Person>(first_name, last_name);
+    return p;
+}
+
+int main () {
+    auto p1 = create_person("Alan", "Turin");
+    auto p2 = create_person("Ada", "Lovelace");
+}
+\end{lstlisting}
+\end{frame}
+
+\end{document}
+    

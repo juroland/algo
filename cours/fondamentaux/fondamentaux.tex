@@ -1,0 +1,349 @@
+\documentclass[handout]{beamer}
+\usepackage[utf8]{inputenc}
+\usetheme{metropolis}           % Use metropolis theme
+\title{Algorithmique Avancée}
+\subtitle{Fondamentaux}
+\author{Julien Roland}
+
+\let\emph\relax % there's no \RedeclareTextFontCommand
+\DeclareTextFontCommand{\emph}{\bfseries\em}
+
+\usepackage{amsmath}
+\newcommand{\Op}[2]{\texttt{\underline{#1}#2}}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+
+\usepackage{listings}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+
+\begin{document}
+\lstset{language=c++, basicstyle=\small, columns=fullflexible}
+    
+\setbeamercovered{dynamic}
+    
+\maketitle
+
+\begin{frame}[t]{Références}
+    
+Références triées par ordre d'importance:
+
+\begin{enumerate}
+    \item \emph{The Algorithm Design Manual} par Steven Skiena.
+    \item \emph{Introduction to Algorithms} par Thomas H. Cormen.
+    \item \emph{Data Structures and Algorithms in C++} par Goodrich, Tamassia, et Mount.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Contenu du cours}
+\begin{itemize}
+    \item Fondamentaux
+    \item Implémentation
+    \item Structures de données
+    \item Les graphes
+    \item Les algorithmes gloutons
+    \item Programmation dynamique
+\end{itemize}
+\end{frame}
+
+\begin{frame}[t]{Algorithme}
+    \begin{flushright}
+        \textit{"Un ensemble fini de règles qui donne une séquence d'opérations pour résoudre un problème particulier."}\\
+        Donald Knuth, The Art of Computer Programming
+    \end{flushright}
+    Caractéristiques importantes pour tous les algorithmes :
+    \begin{itemize}
+        \item Fini
+        \item Défini (précis)
+        \item Entrée(s)
+        \item Sortie(s)
+        \item \textit{"Effective"}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[t]{Structures de données}
+    \begin{flushright}
+        \textit{"Une structure de données est un moyen de stocker et organiser des données afin d'en faciliter l'accès et leur modification."}\\
+        Cormen et al. Introduction to Algorithms
+    \end{flushright}
+
+    \vfill
+
+    \begin{flushright}
+        \textit{"Une structure de données est une manière systématique permettant d'organiser et d'accéder à des données"}\\
+        Goodrich et al. Data Structures and Algorithms in C++
+    \end{flushright}
+    
+    \vfill
+
+    Quelques exemples ?
+    
+\end{frame}
+
+\begin{frame}[t]{Types de données abstraits}
+    \begin{flushright}
+        \textit{"Un type de donnée abstrait définit un ensemble d'objets abstraits caractérisés par les opérations qui leurs sont applicables"}\\
+        B. Liskov et S. Zilles, Programming with abstract data types.
+    \end{flushright}
+
+    Parmi les exemples suivants, identifier les structures de données et les ADTs :
+
+    \begin{enumerate}
+        \item Liste
+        \item File (queue)
+        \item Liste simplement chaînée
+        \item Tableau
+        \item Pile (stack)
+        \item Dictionnaire
+        \item Arbre
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}[t]{ADT Liste}
+    Opérations généralement définies pour une liste L :
+    \begin{itemize}
+        \item \lstinline{begin(L)}
+        \item \lstinline{end(L)}
+        \item \lstinline{push_front(L, e)}
+        \item \lstinline{push_back(L, e)}
+        \item \lstinline{insert(L, p, e)}
+        \item \lstinline{pop_front(L)}
+        \item \lstinline{pop_back(L)}
+        \item \lstinline{erase(L, p)}
+    \end{itemize}
+    Comment implémenter un tel ADT à l'aide d'un Tableau ?
+\end{frame}
+
+\begin{frame}[t]{ADT Stack}
+    Opérations définies pour un stack S:
+    \begin{itemize}
+        \item push(S, x)
+        \item pop(S)
+    \end{itemize}
+
+    Quelles implémentations ?
+\end{frame}
+
+\begin{frame}[fragile]{ADT en C++}
+    En C++, un type de données abstrait est défini par une classe sans données membres publiques.
+    \begin{lstlisting}
+        template<typename T>
+        class Stack {
+        public:
+            void push(const T& x);
+            void pop();
+            const T& top();
+            int size() const;
+            bool empty() const;
+        };
+    \end{lstlisting}
+    Dans la STL, \lstinline{std::stack} est un adaptateur de conteneurs :
+    \begin{lstlisting}
+    template<class T, class Container = std::deque<T>> class stack;
+    \end{lstlisting}
+\end{frame}
+
+\begin{frame}[t]{Pseudo-code}
+    Pourquoi utiliser un pseudo-code au lieu d'un langage de programmation ?
+    \begin{itemize}
+        \item Permet d'utiliser ce qui est le plus précis, expressif et concis.
+        \item Combiner code et phrases en français. 
+    \end{itemize}
+    Il n'y a pas de définition précise de pseudo-code !
+
+    \begin{flushright}
+        \textit{Pseudocode is perhaps the most mysterious of the bunch, but it is best defined as a
+        programming language that never complains about syntax errors.}\\
+        Skiena, The Algorithm Design Manual
+    \end{flushright}
+\end{frame}
+
+\begin{frame}[fragile]{Pseudo-code}
+Il doit être suffisamment \emph{clair} pour être en mesure de le le mettre en oeuvre dans un language de programmation \emph{sans ambiguïté}.
+
+\begin{algorithmic}
+    \Function{InsertionSort}{$A$}
+    \Comment{A, un tableau indicé de 0 à n-1}
+    \ForAll{$i \leftarrow 1$ \textbf{to} $n - 1$}
+        \State $key \leftarrow A[i]$
+        \State $j \leftarrow i - 1$\\
+        \Comment{Insertion de key dans la séquence triée A[0...i-1]}
+        \While{$j \geqslant 0$ \textbf{and} $A[j] > key$}
+            \State $A[j + 1] \leftarrow A[j]$
+            \State $j \leftarrow j - 1$
+        \EndWhile 
+        \State $A[j + 1] \leftarrow key$
+    \EndFor
+    \EndFunction
+\end{algorithmic}
+
+\end{frame}
+
+\begin{frame}[fragile]{Pseudo-code}
+Un pseudo-code devrait être uniquement composé d'opérations primitives et de structures de contrôles.\\
+\vfill
+Exemple à ne pas suivre :
+\vfill
+\begin{algorithmic}
+    \Function{InsertionSort}{$A$}
+    \ForAll{$i \leftarrow 1$ \textbf{to} $n - 1$}
+        \State Insertion de $A[i]$ dans la séquence triée $A[0...i-1]$
+    \EndFor
+    \EndFunction
+\end{algorithmic}
+
+Le temps d'exécution de chaque étape doit être en temps constant (c-à-d, ne pas dépendre de la taille de l'instance du problème).
+\end{frame}
+
+\section{Analyse des algorithmes}
+
+\begin{frame}[t]{Modèle de calcul RAM}
+    Nous considérons un modèle d'ordinateur hypothétique appelé \emph{Random Access Machine} où chaque \emph{opération primitive} nécessite exactement \emph{une étape} de temps :
+    \begin{itemize}
+        \item Opération arithmétique et logique : +, *, ==,...
+        \item Affecter une valeur à une variable
+        \item Appeler une fonction
+        \item Accès mémoire: par exemple indexer un tableau
+        \item Suivre une référence vers un objet
+        \item ...
+    \end{itemize}
+    Ainsi, nous mesurons le temps d'exécution en comptant le nombre d'étapes.
+\end{frame}
+
+\begin{frame}[fragile]{Modèle de calcul RAM}
+    \begin{lstlisting}
+        int min(int, int);
+
+        int min1(int v[], int n) {
+            int m = v[0]
+            for (int i = 0; i < n; n++)
+                m = min(v[i], m);
+            return m;
+        }
+
+        int min2(int v[], int n) {
+            int m = v[0];
+            for (int i = 0; i < n; i += 2) 
+                m = min(v[i], m);
+            for (int i = 1; i < n; i += 2) 
+                m = min(v[i], m);
+            return m;
+        }
+    \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Modèle de calcul RAM}
+    Discussion:
+    \begin{itemize}
+        \item Ce modèle est-il réalise ?
+        \item Quels sont les limites ?
+        \item En quoi est-il utile en pratique ?
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Pire cas, Meilleur cas, Cas moyen}
+    \centering
+    \includegraphics[scale=0.5]{figure/best_worst_average.pdf} 
+\end{frame}
+
+\begin{frame}{Rappels}
+\begin{itemize}
+    \item Espérance d'une variable aléatoire discrète $X$ :
+    $$
+    E[X] = \sum_{i = 1}^n x_i p_i
+    $$
+    \item Coefficient binomial :
+    $$
+    {n \choose k} = C_n^k\, = \frac{n!}{k!(n-k)!}
+    $$
+    \item Le $n$-ième nombre triangulaire :
+    $$
+    \sum_{k=1}^n k = \frac{n(n+1)}{2}
+    $$
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Pire cas, Meilleur cas, Cas moyen}
+    \begin{lstlisting}
+        int index(const char *s, char ch)
+        {
+            for (const char *p = s ;; ++p) {
+                if (*p == ch)
+                    return p - s;
+                if (*p == '\0')
+                    return -1;
+            }
+        }
+    \end{lstlisting}
+    Quels sont les pire cas, meilleur cas et cas moyen ?
+\end{frame}
+
+
+\begin{frame}[t]{Majorant asymptotique}
+    \begin{itemize}
+        \item $f : \N \rightarrow \R$ et $g : \N \rightarrow \R$
+        \item $O(g(n)) = \big\{ f(n) :$ il existe des constantes positives $c$ et $n_0$ telles que $0 \leqslant f(n) \leqslant c g(n)$ pour tout $n \geqslant n_0\big\}$
+    \end{itemize}
+    \begin{center}
+        \includegraphics[scale=0.4]{figure/upper_bound.pdf} 
+    \end{center}
+    Il est généralement admis de noter, par exemple, $3n^2 - 100m + 6 = O(n^2)$.
+\end{frame}
+
+\begin{frame}[t]{Classes de complexités}
+    La notation en "grand O" permet d'évaluer plus simplement le temps d'exécution d'un algorithme comme "taux d'accroissement" par rapport à la taille du problème.
+
+    \begin{itemize}
+        \item $O(1)$ : constant
+        \item $O(\log n)$ : logarithmique
+        \item $O(n)$ : linéaire
+        \item $O(n \log n)$ : quasi linéaire
+        \item $O(n^2)$ : quadratique
+        \item $O(n^3)$ : cubique
+        \item $O(c^n)$ : exponentielle (avec une constante $c > 1$)
+        \item $O(n!)$ : factorielle
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[t]{Exercices}
+À l'aide de la définition de la notation en \emph{grand O}, démontrer les résultats suivants :
+\begin{enumerate}
+    \item $f(n) = 8n + 2$ est en $O(n)$ (également noté $8n + 2 = O(n)$)
+    \item $n^2 = O(n^3)$
+    \item $n^3 + n^2 + n + 1 = O(n^3)$
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[t]{Notations et Résultats}
+\begin{itemize}
+    \item Relation de dominance :
+        $$
+        f(n) = O(g(n))\text{, alors}\ g \gg f
+        $$
+    \item La somme de deux fonctions :
+        $$
+        O(f(n)) + O(g(n)) \rightarrow O(max(f(n), g(n))
+        $$
+    \item Transitivité :
+        $$
+        f(n) = O(g(n))\ \text{et}\ g(n) = O(h(n)) \rightarrow f(n) = O(h(n))
+        $$
+\end{itemize}
+\end{frame}
+
+\begin{frame}[t]{Analyse de complexité}
+Deux algorithmes A et B permettent de résoudres toutes instances d'un même problème. Les temps d'exécutions sont respectivements en $O(n)$ et en $O(n^2)$
+\vfill
+Lesquelles des affirmations suivantes sont vraies :
+\begin{enumerate}
+\item L'algorithme A est dit "asymptotiquement meilleur" que B.
+\item Pour toutes instances, le temps de cacul de A est inférieur au temps de calcul de B.
+\item Il est potentiellement possible de trouver certaines instances pour lesquelles le temps de calculs de A est deux fois suppérieur au temps de calcul de B.
+\item Le choix de l'algorithme A (au détriment de l'algorithme B) permet d'anticiper un passage à l'échelle (faire face à une montée en charge).
+\end{enumerate}
+\end{frame}
+
+
+\end{document}
+    

@@ -1,0 +1,174 @@
+\documentclass{beamer}
+\usepackage[utf8]{inputenc}
+\usetheme{metropolis}           % Use metropolis theme
+\title{Algorithmique Avancée}
+\subtitle{ADT : Ordered Map}
+\author{Julien Roland}
+
+\let\emph\relax % there's no \RedeclareTextFontCommand
+\DeclareTextFontCommand{\emph}{\bfseries\em}
+
+\newcommand{\Op}[2]{\texttt{\underline{#1}#2}}
+
+\usepackage{listings}
+
+
+\begin{document}
+\lstset{language=c++, basicstyle=\small, columns=fullflexible}
+
+% \setbeamercovered{dynamic}
+\setbeamercovered{invisible}
+
+\maketitle
+
+
+\begin{frame}{ADT : Map}
+    Outre les opérations de l'ADT Map, les opérations suivantes sont disponibles :
+\begin{block}{Opérations (pour une Ordered Map M)}
+    \begin{description}[\Op{predecessor}{(M, x)} :]
+        \item[\Op{min}{(M)} : ] retourne un pointeur vers l'entrée de M avec la plus petite valeur
+            de clé. 
+        \item[\Op{max}{(M)} : ] retourne un pointeur vers l'entrée de M avec la plus grande valeur
+            de clé.
+        \item[\Op{successor}{(M, x)} :] retourne un pointeur vers l'entrée de M suivant l'entrée
+            pointée par x. Si x pointe vers la dernière entrée de M, alors retourne ``NULL".
+        \item[\Op{predecessor}{(M, x)}]
+    \end{description}
+    Dans tous les cas, si M est vide, alors retourne ``NULL".
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{std::unordered\_map}}
+    \begin{lstlisting}
+    // from http://en.cppreference.com/w/cpp/container/map/begin
+    #include <iostream>
+    #include <map>
+
+    int main() {
+        std::map<int, float> num_map;
+        num_map[4] = 4.13;
+        num_map[9] = 9.24;
+        num_map[1] = 1.09;
+
+        for (auto it = num_map.begin(); it != num_map.end(); ++it) {
+            std::cout << it->first << ", " << it->second << '\n';
+        }
+    }
+    \end{lstlisting}
+\end{frame}
+
+\begin{frame}{Implémentations}
+    \begin{block}{Structures de données}
+        \begin{itemize}
+            \item Liste (doublement ou simplement chaînée) triée
+            \item Tableau trié
+            \item Arbre binaire de recherche (Binary Search Tree - BST)
+            \item ...
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}[t]{Arbre Binaire de Recherche}
+Un arbre binaire T tel que chaque nœud $x$ contient une paire $(key, value)$ et satisfait la
+propriété suivante:
+\begin{itemize}
+    \item Si $y$ est un nœud dans le sous arbre gauche de $x$, alors $y.key \leqslant x.key$.
+    \item Si $y$ est un nœud dans le sous arbre droit de $x$, alors $y.key \geqslant x.key$.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Parcours infixe}
+La propriété de l'arbre de recherche nous permet de lister l'ensemble des entrées de l'arbre de
+manière triée à l'aide d'un algorithme récursif.
+\pause
+\begin{lstlisting}
+        inorder_tree_walk(x) {
+            if x == NULL {
+                return
+            }
+            inorder_tree_walk(x.left)
+            print(x.key)
+            inorder_tree_walk(x.right)
+        }
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Parcours infixe : complexité}
+    Quelle est la complexité de cet algorithme ?\\
+    \pause
+    \vfill
+    Si $x$ est la racine d'un arbre composé de $n$ nœuds, alors la complexité de
+    \texttt{inorder\_tree\_walk(x)} est en $O(n)$. (pour chaque nœud, la fonction est appelée 2 fois)
+\end{frame}
+
+
+\begin{frame}[fragile]{Recherche}
+    \pause
+    \begin{lstlisting}
+        tree_find(x, k) {
+            if x == NULL or k == x.key {
+                return x
+            }
+            if k < x.key {
+                return tree_find(x.left, k)
+            }
+            return tree_find(x.right, k)
+        }
+    \end{lstlisting}
+
+    Quelle est la complexité de cet algorithme ?
+\end{frame}
+
+\begin{frame}[fragile]{Successeur}
+    \pause
+    \begin{lstlisting}
+        tree_successor(x) {
+            if x.right != NULL
+                return tree_minimum(x.right)
+            y = x.parent
+            while y != NULL and x == y.right {
+                x = y
+                y = x.parent
+            }
+            return y
+        }
+    \end{lstlisting}
+\end{frame}
+
+\lstset{language=c++, basicstyle=\scriptsize, columns=fullflexible}
+
+\begin{frame}[fragile]{Insertion}
+    Objectif : maintenir la propriété de l'arbre binaire de recherche.
+    \pause
+    \begin{lstlisting}
+        // un noeud v tel que v.left = NULL et v.right = NULL
+        tree_insert(T, v) {
+            y = NULL; x = T.root
+            while x != NULL {
+                y = x
+                if v.key < x.key:
+                    x = x.left
+                else:
+                    x = x.right
+            }
+            v.parent = y
+            if y == NULL:   // Empty Tree T
+                T.root = v
+            else if v.key < y.key:
+                y.left = v
+            else:
+                y.right = v
+        }
+    \end{lstlisting}
+\end{frame}
+
+\begin{frame}[t]{Exercice}
+    \begin{enumerate}
+        \item Pour l'ensemble $\{1, 4, 5, 10, 16, 17, 21\}$ de clés, dessiner un arbre binaire de recherche de hauteur 2 et 6.
+        \item Donner une version non-récursive de l'algorithme inorder\_tree\_walk. (avec et sans l'utilisation d'un stack).
+        \item Donner une version non récursive (itérative) des fonctions tree\_find(), tree\_min(), et tree\_max().
+        \item Écrire la fonction tree\_predecessor(x).
+        \item Écrire les version récursives des procédures tree\_min() et tree\_max().
+    \end{enumerate}
+\end{frame}
+\end{document}

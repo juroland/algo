@@ -1,0 +1,152 @@
+\documentclass[handout]{beamer}
+\usepackage[utf8]{inputenc}
+\usetheme{metropolis}           % Use metropolis theme
+\title{Algorithmique Avancée}
+\subtitle{Structures de données : Deuxième Partie (Map)}
+\author{Julien Roland}
+
+\let\emph\relax % there's no \RedeclareTextFontCommand
+\DeclareTextFontCommand{\emph}{\bfseries\em}
+
+\newcommand{\Op}[2]{\texttt{\underline{#1}#2}}
+
+\usepackage{listings}
+
+\begin{document}
+\lstset{language=c++, basicstyle=\scriptsize, columns=fullflexible}
+
+\setbeamercovered{dynamic}
+
+\maketitle
+\begin{frame}{ADT : Map}
+Similaire à un dictionnaire, mais où chaque élément a une valeur de clé unique : pour toute paire
+d'éléments $x, y$ : $x.key \neq y.key$.
+\pause
+\begin{block}{Opérations (pour une Map M)}
+    \begin{description}[\Op{put}{(M, k, v)} :]
+        \item[\Op{find}{(M, k)} : ] \emph{si} M contient un élément $e = (k, v)$,\\ \emph{alors} retourne
+            un pointeur vers cet élément.
+        \item[\Op{put}{(M, k, v)} :] \emph{Si} M ne contient pas un élément $(k, w)$,\\ \emph{alors}
+            ajoute l'élément $(k, v)$ dans $M$,\\ \emph{sinon} remplace $w$ par $v$.\\ Retourne un
+            pointeur vers l'élément.
+        \item[\Op{erase}{(M, k)} :] Supprime l'élément $(k, v)$ de M.
+        \item[\Op{erase}{(M, p)} :] Supprime l'élément pointé par p dans M.
+    \end{description}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{std::unordered\_map}}
+    \begin{lstlisting}
+#include <unordered_map>
+
+int main()
+{
+    auto words = {"this", "sentence", "is", "not", "a", "sentence",
+                  "this", "sentence", "is", "a", "hoax"};
+
+    std::unordered_map<std::string, size_t>  word_map;
+
+    for (const auto &w : words) {
+        ++word_map[w];
+    }
+
+    for (const auto &pair : word_map) {
+        std::cout << pair.second << " occurrences of word '" << pair.first << "'\n";
+    }
+}
+    \end{lstlisting}
+\end{frame}
+
+\begin{frame}{Implémentations}
+    \begin{block}{Structures de données}
+        \begin{itemize}
+            \item Liste (simplement ou doublement chaînée)
+            \item Tableau
+            \item Table à adressage direct
+            \item Table de hachage
+        \end{itemize}
+    \end{block}
+    \pause
+    \textit{Quel est la complexité au pire cas pour l'implémentation de l'opération \emph{find} ?}
+\end{frame}
+
+\begin{frame}[t]{Table à adressage direct}
+    \begin{block}{Hypothèse}
+        Chaque clé $k \in U = \{0, 1,\ldots, m-1\}$.
+    \end{block}
+    \pause
+    \begin{block}{Opérations}
+        \begin{description}
+            \item[\Op{find}{(T, k)} :] \texttt{return T[k];}
+            \item[\Op{put}{(T, k, v)} :] \texttt{T[k] = (k, v); return T[k];}
+            \item[\Op{erase}{(T, x)} :] \texttt{T[x.key] = NULL;}
+        \end{description}
+        où T est un tableau de taille m.
+    \end{block}
+\end{frame}
+
+\begin{frame}[t]{Table à adressage direct}
+    \begin{block}{Questions}
+        \begin{enumerate}
+            \item Quelle est la complexité au pire cas des opérations de l'ADT
+                Map implémenté à l'aide de cette structure de donnée ?
+            \pause
+            \item Soit $K \subseteq U$ l'ensemble des clés utilisées dans une Map M. Que se
+                passe-t-il lorsque $|U|$ est grand et que $|K|$ est faible par rapport à $|U|$ ?
+        \end{enumerate}
+    \end{block}
+\end{frame}
+
+\begin{frame}[t]{Table de hachage (Hash table)}
+    Cette \emph{structure de donnée} permet d'implémenter une Map avec une utilisation de
+    l'\emph{espace} en $O(|K|)$ tout en conservant un temps d'exécution intéressant.
+
+    \pause
+
+    \begin{block}{Fonction de hachage}
+        $$h: U \rightarrow \{0, 1, \ldots, n-1\}$$
+    \end{block}
+
+    \pause
+
+    \begin{block}{Collision}
+        Une \emph{collision} se produit lorsque des clés différentes $k_i, k_j \in U$ ont la même
+        valeur de hachage, c'est-à-dire $h(k_i) = h(k_j)$.
+    \end{block}
+\end{frame}
+
+\begin{frame}[t]{Résolution de collision par ``chaînage"}
+    \emph{Opérations} d'une Map implémentées à l'aide d'une table de hachage :
+    \begin{description}
+        \item[\Op{put}{(T, k, v)} :] Insertion de $(k, v)$ en tête de la liste $T[h(k)]$.
+        \item[\Op{find}{(T, k)} :] Retourner un élément dans la liste $T[h(k)]$ dont la clé est
+            égale à $k$.
+        \item[\Op{erase}{(T, x)} :] Supprimer $x$ de la liste $T[h(x.key)]$.
+    \end{description}
+\end{frame}
+
+\begin{frame}{Table de hachage : complexité}
+        \begin{block}{Questions}
+            \begin{enumerate}
+                \item Quelle est la complexité au pire cas des opérations de l'ADT Map implémenté
+                    à l'aide de cette structure de donnée ?
+                \pause
+                \item Quelle est la complexité en moyenne d'une recherche ``infructueuse" ?
+                \item Quelle est la complexité en moyenne d'une recherche ``fructueuse" ?
+            \end{enumerate}
+        \end{block}
+\end{frame}
+
+\begin{frame}[t]{Exercice}
+    \begin{itemize}
+        \item Décrire le processus d'insertion des clés 5, 28, 19, 15, 20, 33, 12, 17, 10 dans une table de Hachage avec collisions résolues par chaînage. La table est composée de 9 \textit{slots} et la fonction de hachage est $h(k)=k \mod 9$.
+    \end{itemize}
+\end{frame}
+
+%\begin{frame}[t]{Exercices}
+%    \begin{enumerate}
+%        \item Un ``bit vector`` est un tableu de bits. Un bit vector de longueur $m$ utilise évidemment moins de place qu'un tableau de $m$ pointeurs. Décrire comment implémenter un ensemble dynamique d'éléments distincts sans données satellite (uniquement une clé). Les différentes opérations find, erase, et insert doivent s'exécuter en $O(1)$ au pire cas. Sans l'utilisation dun \texttt{std::bitset}, c'est-à-dire en utilisant un tableau alloué dynamiquement avec l'utilisation des opérations suivantes : \texttt{/, \%, <<, \&, |, \&=, |=}.
+%    \end{enumerate}
+%\end{frame}
+
+\end{document}
